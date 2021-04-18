@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.Design;
 using AutoFixture.Xunit2;
 using FluentAssertions;
 using Xunit;
