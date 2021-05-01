@@ -51,5 +51,59 @@ namespace Customer.Api.Tests
 
             actual.Should().BeEquivalentTo(customerDto);
         }
+
+        [Theory]
+        [AutoData]
+        public void Post_WhenCalled_ReturnExpectedStatusCode(CustomerDto customerDto)
+        {
+            var customerServiceMock = new Mock<ICustomerService>();
+
+            var customerController = new CustomerController(customerServiceMock.Object);
+
+            var result = customerController.Post(customerDto);
+
+            var apiOkResult = result.Should().BeOfType<OkResult>().Subject;
+            apiOkResult.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+            customerServiceMock.Verify(c => c.CreateNew(customerDto));
+        }
+
+        [Theory]
+        [AutoData]
+        public void Put_WhenCalled_ReturnCustomer(CustomerDto customerDto)
+        {
+            var customerServiceMock = new Mock<ICustomerService>();
+            customerServiceMock.Setup(c => c.Update(customerDto)).Returns(customerDto);
+
+            var customerController = new CustomerController(customerServiceMock.Object);
+
+            var result = customerController.Put(customerDto);
+
+            var apiOkResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+            apiOkResult.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+            var returnedCustomer = apiOkResult.Value.Should().BeAssignableTo<CustomerDto>().Subject;
+
+            returnedCustomer.Should().Be(customerDto);
+        }
+
+        [Theory]
+        [AutoData]
+        public void GetByCityCode_WhenCalled_ReturnListOfCustomer(string cityCode, List<CustomerDto> expectedCustomers)
+        {
+            var customerServiceMock = new Mock<ICustomerService>();
+            customerServiceMock.Setup(c => c.GetByCityCode(cityCode)).Returns(expectedCustomers);
+
+            var customerController = new CustomerController(customerServiceMock.Object);
+
+            var result = customerController.GetByCityCode(cityCode);
+
+            var apiOkResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+            apiOkResult.StatusCode.Should().Be(StatusCodes.Status200OK);
+
+            var returnedCustomers = apiOkResult.Value.Should().BeAssignableTo<List<CustomerDto>>().Subject;
+
+            returnedCustomers.Should().BeEquivalentTo(expectedCustomers);
+        }
     }
 }
